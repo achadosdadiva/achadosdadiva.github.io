@@ -101,7 +101,7 @@
     <footer>
       <p>Divulgamos ofertas com <b>links de afiliado</b> do Mercado Livre: podemos receber uma comissão pelas compras, sem nenhum custo extra para você. Não somos o Mercado Livre nem falamos em nome dele.</p>
       <p>Preços e estoque podem mudar a qualquer momento, sempre confira na página do produto antes de comprar.</p>
-      <p>Esta página usa o Pixel da Meta apenas para medir o resultado dos nossos anúncios. Não pedimos nenhum dado seu.</p>
+      <p>Esta página usa os pixels da Meta e do TikTok apenas para medir o resultado dos nossos anúncios. Não pedimos nenhum dado seu.</p>
     </footer>
   </main>
 
@@ -111,6 +111,8 @@
     var GROUP_INVITE = "https://chat.whatsapp.com/IkDlRFURjubFtYctqBtUDF";
     // ID do Pixel da Meta (Gerenciador de Eventos). Vazio = página funciona sem Pixel.
     var META_PIXEL_ID = "1027325064339819";
+    // ID do Pixel do TikTok (Events Manager do TikTok Ads). Vazio = página funciona sem ele.
+    var TIKTOK_PIXEL_ID = "DBTKRIJC77U9QJQDQTO0";
     // -----------------------------------------------------------------------------------------
 
     var btn = document.getElementById("entrar");
@@ -126,11 +128,22 @@
       fbq("track", "PageView");
     }
 
-    // Clique em "Entrar": registra o evento Lead (é para ele que a campanha otimiza) e abre o grupo.
+    if (TIKTOK_PIXEL_ID) {
+      !function (w, d, t) {
+        w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=d.createElement("script");o.type="text/javascript",o.async=!0,o.src=r+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+        ttq.load(TIKTOK_PIXEL_ID);
+        ttq.page();
+      }(window, document, "ttq");
+    }
+
+    // Clique em "Entrar": registra Lead na Meta e no TikTok (o pixel do TikTok já registrava o
+    // SubmitForm do modelo "Inscrição na oferta" como Lead), que é para onde as campanhas
+    // otimizam, e abre o grupo depois de dar tempo dos pixels enviarem.
     btn.addEventListener("click", function (ev) {
-      if (!window.fbq) return; // sem Pixel: segue o link normalmente
+      if (!window.fbq && !window.ttq) return; // sem pixel nenhum: segue o link normalmente
       ev.preventDefault();
-      fbq("track", "Lead", { content_name: "entrar_grupo_whatsapp" });
+      if (window.fbq) fbq("track", "Lead", { content_name: "entrar_grupo_whatsapp" });
+      if (window.ttq) ttq.track("Lead", { content_name: "entrar_grupo_whatsapp" });
       setTimeout(function () { window.location.href = GROUP_INVITE; }, 300);
     });
   </script>
